@@ -7,6 +7,8 @@
 #include "httplib.h"
 #include "json.hpp"
 
+#define SMART_VISION_AUTH "https://smartvision.auth.us-east-1.amazoncognito.com"
+
 LOGGER_TAG("com.amazonaws.kinesis.video");
 
 using namespace com::amazonaws::kinesis::video;
@@ -38,7 +40,7 @@ static std::string base64_encode(const std::string &in)
 
 nlohmann::json NuveoCredentialProvider::exchange_credentials(string client_id, string client_secret)
 {
-    httplib::Client cli("https://smartvision.auth.us-east-1.amazoncognito.com");
+    httplib::Client cli(SMART_VISION_AUTH);
     cli.enable_server_certificate_verification(false);
 
     auto to_encode = client_id + ":" + client_secret;
@@ -53,7 +55,7 @@ nlohmann::json NuveoCredentialProvider::exchange_credentials(string client_id, s
 
     auto parsed_res = nlohmann::json::parse(res->body);
 
-    std::cout << parsed_res["access_token"] << std::endl;
+    std::cout << "access_token=" << parsed_res["access_token"] << std::endl;
 
     return parsed_res;
 }

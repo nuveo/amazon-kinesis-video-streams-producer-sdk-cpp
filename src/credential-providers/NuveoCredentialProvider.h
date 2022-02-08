@@ -22,14 +22,14 @@ namespace com { namespace amazonaws { namespace kinesis { namespace video {
                 NuveoCredentialProvider::client_id_,
                 NuveoCredentialProvider::client_secret_);
 
-            credentials.setAccessKey(".....");
-            credentials.setSecretKey(".....");
-            credentials.setSessionToken("......");
+            credentials.setAccessKey(sts_credentials["access_key_id"]);
+            credentials.setSecretKey(sts_credentials["secret_key"]);
+            credentials.setSessionToken(sts_credentials["session_token"]);
 
             auto now_time = std::chrono::duration_cast<std::chrono::seconds>(
                 std::chrono::system_clock::now().time_since_epoch()
             );
-            auto expiration_seconds = now_time + std::chrono::seconds(31);
+            auto expiration_seconds = now_time + std::chrono::seconds(31); // TODO: change this
             credentials.setExpiration(std::chrono::seconds(expiration_seconds.count()));
 
         }
