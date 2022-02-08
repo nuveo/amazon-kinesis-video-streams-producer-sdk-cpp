@@ -16,9 +16,9 @@ namespace com { namespace amazonaws { namespace kinesis { namespace video {
         const std::chrono::duration<uint64_t> ROTATION_PERIOD = std::chrono::seconds(3500);
     public:
         NuveoCredentialProvider(std::string client_id, std::string client_secret) : client_id_(client_id), client_secret_(client_secret) {}
-        nlohmann::json echange_credentials(std::string, std::string);
+        nlohmann::json exchange_credentials(std::string, std::string);
         void updateCredentials(Credentials& credentials) override {
-            auto sts_credentials = echange_credentials(
+            auto sts_credentials = exchange_credentials(
                 NuveoCredentialProvider::client_id_,
                 NuveoCredentialProvider::client_secret_);
 

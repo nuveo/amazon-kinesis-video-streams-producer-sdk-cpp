@@ -36,7 +36,7 @@ static std::string base64_encode(const std::string &in)
     return out;
 }
 
-nlohmann::json NuveoCredentialProvider::echange_credentials(string client_id, string client_secret)
+nlohmann::json NuveoCredentialProvider::exchange_credentials(string client_id, string client_secret)
 {
     httplib::Client cli("https://smartvision.auth.us-east-1.amazoncognito.com");
     cli.enable_server_certificate_verification(false);
