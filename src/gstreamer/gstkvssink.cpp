@@ -62,7 +62,6 @@
 #include "KvsSinkDeviceInfoProvider.h"
 #include <IotCertCredentialProvider.h>
 #include "Util/KvsSinkUtil.h"
-#include <stdexcept>
 
 LOGGER_TAG("com.amazonaws.kinesis.video.gstkvs");
 
