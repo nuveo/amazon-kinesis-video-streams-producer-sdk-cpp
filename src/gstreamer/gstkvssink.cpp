@@ -272,9 +272,17 @@ void kinesis_video_producer_init(GstKvsSink *kvssink)
     }
 
     unique_ptr<CredentialProvider> credential_provider;
+    NuveoCredentialProvider *ncp = new NuveoCredentialProvider(client_id, client_secret);
 
+    char const *cauth_url, *auth_url;
+    if (nullptr != (cauth_url = getenv("NUVEO_SV_COGNITO_AUTH_URL")))    {
+        ncp->setCognitoAuth(cauth_url);
+    }
+    if (nullptr != (auth_url = getenv("NUVEO_SV_AUTH_URL")))    {
+        ncp->setSVAuth(auth_url);
+    }
 
-    credential_provider.reset(new NuveoCredentialProvider(client_id, client_secret));
+    credential_provider.reset(ncp);
 
     data->kinesis_video_producer = KinesisVideoProducer::createSync(move(device_info_provider),
                                                                     move(client_callback_provider),
