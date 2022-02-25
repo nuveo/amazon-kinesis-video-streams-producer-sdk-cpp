@@ -7,13 +7,10 @@
 #include "httplib.h"
 #include "json.hpp"
 
-#define SMART_VISION_AUTH "https://smartvision.auth.us-east-1.amazoncognito.com"
-
 LOGGER_TAG("com.amazonaws.kinesis.video");
 
 using namespace com::amazonaws::kinesis::video;
 using namespace std;
-
 
 static std::string base64_encode(const std::string &in)
 {
@@ -40,7 +37,8 @@ static std::string base64_encode(const std::string &in)
 
 nlohmann::json NuveoCredentialProvider::exchange_credentials(string client_id, string client_secret)
 {
-    httplib::Client cli(SMART_VISION_AUTH);
+    // OAuth with Cognito
+    httplib::Client cli(NuveoCredentialProvider::SV_COGNITO_AUTH);
     cli.enable_server_certificate_verification(false);
 
     auto to_encode = client_id + ":" + client_secret;
@@ -53,11 +51,58 @@ nlohmann::json NuveoCredentialProvider::exchange_credentials(string client_id, s
         "grant_type=client_credentials",
         "application/x-www-form-urlencoded");
 
+    if (!res) {
+        auto err = res.error();
+        std::stringstream ss;
+        ss << "Error while trying to get access_token: " << err << std::endl;
+        LOG_DEBUG(NuveoCredentialProvider::SV_COGNITO_AUTH)
+        LOG_AND_THROW(ss.str());
+    }
+
+    if (res->status != 200) {
+        std::stringstream ss;
+        ss << "Got status code: " << res->status << std::endl;
+        LOG_DEBUG(ss.str());
+
+        auto err_details = nlohmann::json::parse(res->body);
+        LOG_AND_THROW(err_details);
+    }
+
     auto parsed_res = nlohmann::json::parse(res->body);
+    auto access_token = parsed_res["access_token"].get<std::string>();
 
-    std::cout << "access_token=" << parsed_res["access_token"] << std::endl;
+    // Call STS Credentials endpoint
+    httplib::Client sv_auth(NuveoCredentialProvider::SV_AUTH);
+    sv_auth.enable_server_certificate_verification(false);
+    LOG_INFO("Calling endpoint for getting STS credentials");
 
-    return parsed_res;
+    headers = {
+        {"Authorization", "Bearer " + access_token}};
+
+    res = sv_auth.Get(
+        "/v1/credentials",
+        headers);
+
+    if (!res) {
+        auto err = res.error();
+        std::stringstream ss;
+        ss << "Error while trying to get STS credentials: " << err << std::endl;
+        LOG_DEBUG(NuveoCredentialProvider::SV_AUTH)
+        LOG_AND_THROW(ss.str());
+    }
+
+    if (res->status != 200) {
+        std::stringstream ss;
+        ss << "Got status code: " << res->status << std::endl;
+        LOG_DEBUG(ss.str());
+
+        auto err_details = nlohmann::json::parse(res->body);
+        LOG_AND_THROW(err_details);
+    }
+
+    auto credentials = nlohmann::json::parse(res->body);
+
+    return credentials;
 }
 
 NuveoCredentialProvider::callback_t NuveoCredentialProvider::getCallbacks(PClientCallbacks client_callbacks) 
