@@ -59,10 +59,7 @@ namespace com { namespace amazonaws { namespace kinesis { namespace video {
         callback_t getCallbacks(PClientCallbacks) override;
     };
 
-}
-}
-}
-}
+}}}}
 
 
 #endif /* __NUVEO_CREDENTIAL_PROVIDER_H__ */
